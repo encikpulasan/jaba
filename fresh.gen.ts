@@ -7,9 +7,12 @@ import * as $_app from "./routes/_app.tsx";
 import * as $api_auth_api_keys from "./routes/api/auth/api-keys.ts";
 import * as $api_auth_api_keys_id_ from "./routes/api/auth/api-keys/[id].ts";
 import * as $api_auth_api_keys_id_usage from "./routes/api/auth/api-keys/[id]/usage.ts";
+import * as $api_content_index from "./routes/api/content/index.ts";
 import * as $api_demo_api_keys from "./routes/api/demo/api-keys.ts";
 import * as $api_demo_validate_key from "./routes/api/demo/validate-key.ts";
+import * as $api_graphql from "./routes/api/graphql.ts";
 import * as $api_joke from "./routes/api/joke.ts";
+import * as $api_media_index from "./routes/api/media/index.ts";
 import * as $greet_name_ from "./routes/greet/[name].tsx";
 import * as $index from "./routes/index.tsx";
 import * as $Counter from "./islands/Counter.tsx";
@@ -23,9 +26,12 @@ const manifest = {
     "./routes/api/auth/api-keys.ts": $api_auth_api_keys,
     "./routes/api/auth/api-keys/[id].ts": $api_auth_api_keys_id_,
     "./routes/api/auth/api-keys/[id]/usage.ts": $api_auth_api_keys_id_usage,
+    "./routes/api/content/index.ts": $api_content_index,
     "./routes/api/demo/api-keys.ts": $api_demo_api_keys,
     "./routes/api/demo/validate-key.ts": $api_demo_validate_key,
+    "./routes/api/graphql.ts": $api_graphql,
     "./routes/api/joke.ts": $api_joke,
+    "./routes/api/media/index.ts": $api_media_index,
     "./routes/greet/[name].tsx": $greet_name_,
     "./routes/index.tsx": $index,
   },
