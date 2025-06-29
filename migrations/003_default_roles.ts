@@ -1,7 +1,7 @@
 // Default Roles Migration
 // Sets up the default role system for masmaCMS
 
-import { RBACManager, DefaultRoles } from "@/lib/auth/mod.ts";
+import { DEFAULT_ROLES, RBACManager } from "@/lib/auth/mod.ts";
 import type { Migration } from "@/types";
 
 export const defaultRolesMigration: Migration = {
@@ -10,9 +10,9 @@ export const defaultRolesMigration: Migration = {
   version: 3,
   up: async () => {
     console.log("🔐 Creating default roles...");
-    
+
     // Create all default roles
-    const rolePromises = Object.values(DefaultRoles).map(async (roleData) => {
+    const rolePromises = DEFAULT_ROLES.map(async (roleData) => {
       try {
         const role = await RBACManager.createRole(roleData);
         console.log(`✅ Created role: ${role.name}`);
@@ -28,10 +28,10 @@ export const defaultRolesMigration: Migration = {
   },
   down: async () => {
     console.log("🔐 Removing default roles...");
-    
+
     // Remove all default roles
-    const roleNames = Object.values(DefaultRoles).map(r => r.name);
-    
+    const roleNames = DEFAULT_ROLES.map((r) => r.name);
+
     for (const roleName of roleNames) {
       try {
         const role = await RBACManager.getRoleByName(roleName);
@@ -43,7 +43,7 @@ export const defaultRolesMigration: Migration = {
         console.error(`❌ Failed to remove role ${roleName}:`, error);
       }
     }
-    
+
     console.log("🎭 Default roles removed");
   },
-}; 
+};

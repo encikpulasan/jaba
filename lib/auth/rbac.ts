@@ -1,135 +1,358 @@
-// Role-Based Access Control (RBAC)
-// Comprehensive permission and role management system
+// Role-Based Access Control (RBAC) System
+// Handles permissions, roles, and access control
 
-import type { Permission, Role, User, UUID } from "@/types";
+import type { Permission, UUID } from "@/types";
 import { db } from "@/lib/db/mod.ts";
 import { KeyPatterns } from "@/lib/db/patterns.ts";
+import { BaseRepository } from "@/lib/db/repositories/base.ts";
+
+export interface Role {
+  id: UUID;
+  name: string;
+  description: string;
+  permissions: Permission[];
+  isSystem: boolean;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface UserRole {
+  userId: UUID;
+  roleId: UUID;
+  assignedAt: number;
+  assignedBy: UUID;
+}
+
+// Permission constants organized by category
+export const CONTENT_PERMISSIONS: Permission[] = [
+  "create_content",
+  "edit_content",
+  "edit_own_content",
+  "delete_content",
+  "delete_own_content",
+  "publish_content",
+  "view_content",
+  "view_unpublished_content",
+];
+
+export const MEDIA_PERMISSIONS: Permission[] = [
+  "upload_media",
+  "edit_media",
+  "delete_media",
+  "view_media",
+  "view_own_media",
+];
+
+export const USER_PERMISSIONS: Permission[] = [
+  "create_users",
+  "edit_users",
+  "delete_users",
+  "view_users",
+  "manage_roles",
+  "view_roles",
+];
+
+export const SYSTEM_PERMISSIONS: Permission[] = [
+  "view_system_settings",
+  "edit_system_settings",
+  "manage_backups",
+  "view_audit_logs",
+  "manage_plugins",
+];
+
+export const TRANSLATION_PERMISSIONS: Permission[] = [
+  "create_translations",
+  "edit_translations",
+  "delete_translations",
+  "view_translations",
+  "manage_locales",
+  "review_translations",
+];
+
+export const WORKFLOW_PERMISSIONS: Permission[] = [
+  "create_workflows",
+  "edit_workflows",
+  "delete_workflows",
+  "view_workflows",
+  "execute_workflows",
+];
+
+export const API_KEY_PERMISSIONS: Permission[] = [
+  "manage_api_keys", // Create and manage own API keys
+  "manage_all_api_keys", // Manage API keys for all users (admin)
+  "view_api_usage", // View API usage statistics
+];
+
+// All permissions combined
+export const ALL_PERMISSIONS: Permission[] = [
+  ...CONTENT_PERMISSIONS,
+  ...MEDIA_PERMISSIONS,
+  ...USER_PERMISSIONS,
+  ...SYSTEM_PERMISSIONS,
+  ...TRANSLATION_PERMISSIONS,
+  ...WORKFLOW_PERMISSIONS,
+  ...API_KEY_PERMISSIONS,
+];
+
+// Default roles for masmaCMS
+export const DEFAULT_ROLES: Omit<Role, "id" | "createdAt" | "updatedAt">[] = [
+  {
+    name: "Super Admin",
+    description: "Full system access with all permissions",
+    permissions: ALL_PERMISSIONS,
+    isSystem: true,
+  },
+  {
+    name: "Administrator",
+    description: "Administrative access with most permissions",
+    permissions: [
+      ...CONTENT_PERMISSIONS,
+      ...MEDIA_PERMISSIONS,
+      ...USER_PERMISSIONS,
+      ...SYSTEM_PERMISSIONS.filter((p) => p !== "manage_plugins"),
+      ...TRANSLATION_PERMISSIONS,
+      ...WORKFLOW_PERMISSIONS,
+      ...API_KEY_PERMISSIONS,
+    ],
+    isSystem: true,
+  },
+  {
+    name: "Editor",
+    description: "Content management and editing capabilities",
+    permissions: [
+      ...CONTENT_PERMISSIONS,
+      ...MEDIA_PERMISSIONS,
+      "view_users",
+      ...TRANSLATION_PERMISSIONS,
+      "view_workflows",
+      "execute_workflows",
+      "manage_api_keys",
+      "view_api_usage",
+    ],
+    isSystem: true,
+  },
+  {
+    name: "Author",
+    description: "Content creation and basic editing",
+    permissions: [
+      "create_content",
+      "edit_own_content",
+      "delete_own_content",
+      "view_content",
+      "view_unpublished_content",
+      "upload_media",
+      "view_own_media",
+      "view_translations",
+      "manage_api_keys",
+    ],
+    isSystem: true,
+  },
+  {
+    name: "Viewer",
+    description: "Read-only access to content",
+    permissions: [
+      "view_content",
+      "view_media",
+      "view_translations",
+    ],
+    isSystem: true,
+  },
+];
+
+class RoleRepository extends BaseRepository<Role> {
+  protected entityName = "role";
+  protected keyPatterns = KeyPatterns.roles;
+
+  // Get role by name
+  async findByName(name: string): Promise<Role | null> {
+    const connection = db.getConnection();
+    const result = await (connection.kv as Deno.Kv).get<UUID>(
+      KeyPatterns.roles.byName(name),
+    );
+
+    if (!result.value) {
+      return null;
+    }
+
+    return await this.findById(result.value);
+  }
+
+  // Get system roles
+  async getSystemRoles(): Promise<Role[]> {
+    const connection = db.getConnection();
+    const roles: Role[] = [];
+
+    // Get all roles and filter for system roles
+    const allRoles = await this.findAll();
+    return allRoles.filter((role) => role.isSystem);
+  }
+
+  // Required abstract method implementations
+  protected async validateEntity(entity: Role): Promise<void> {
+    if (!entity.name || entity.name.trim().length === 0) {
+      throw new Error("Role name is required");
+    }
+
+    if (!entity.permissions || !Array.isArray(entity.permissions)) {
+      throw new Error("Role permissions must be an array");
+    }
+
+    // Check for duplicate name
+    const existing = await this.findByName(entity.name);
+    if (existing && existing.id !== entity.id) {
+      throw new Error("Role name must be unique");
+    }
+  }
+
+  protected async addToIndexes(
+    entity: Role,
+    atomic: Deno.AtomicOperation,
+  ): Promise<void> {
+    // Add name index
+    atomic.set(KeyPatterns.roles.byName(entity.name), entity.id);
+  }
+
+  protected async updateIndexes(
+    oldEntity: Role,
+    newEntity: Role,
+    atomic: Deno.AtomicOperation,
+  ): Promise<void> {
+    // Update name index if name changed
+    if (oldEntity.name !== newEntity.name) {
+      atomic.delete(KeyPatterns.roles.byName(oldEntity.name));
+      atomic.set(KeyPatterns.roles.byName(newEntity.name), newEntity.id);
+    }
+  }
+
+  protected async removeFromIndexes(
+    entity: Role,
+    atomic: Deno.AtomicOperation,
+  ): Promise<void> {
+    // Remove name index
+    atomic.delete(KeyPatterns.roles.byName(entity.name));
+  }
+}
 
 export class RBACManager {
-  // Create role with permissions
-  static async createRole(
-    roleData: Omit<Role, "id" | "createdAt" | "updatedAt">,
-  ): Promise<Role> {
-    const role: Role = {
-      ...roleData,
-      id: crypto.randomUUID(),
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    };
+  private static roleRepo = new RoleRepository();
 
-    const connection = db.getConnection();
-    const atomic = (connection.kv as Deno.Kv).atomic();
+  // Initialize default roles
+  static async initializeDefaultRoles(): Promise<void> {
+    for (const roleData of DEFAULT_ROLES) {
+      const existingRole = await this.roleRepo.findByName(roleData.name);
+      if (!existingRole) {
+        await this.roleRepo.create(roleData);
+        console.log(`Created default role: ${roleData.name}`);
+      }
+    }
+  }
 
-    // Store role
-    atomic.set(KeyPatterns.roles.byId(role.id), role);
-    atomic.set(KeyPatterns.roles.byName(role.name), role.id);
-
-    await atomic.commit();
-    return role;
+  // Get all roles
+  static async getRoles(): Promise<Role[]> {
+    return await this.roleRepo.findAll();
   }
 
   // Get role by ID
   static async getRole(roleId: UUID): Promise<Role | null> {
-    const connection = db.getConnection();
-    const result = await (connection.kv as Deno.Kv).get<Role>(
-      KeyPatterns.roles.byId(roleId),
-    );
-    return result.value || null;
+    return await this.roleRepo.findById(roleId);
   }
 
   // Get role by name
   static async getRoleByName(name: string): Promise<Role | null> {
-    const connection = db.getConnection();
+    return await this.roleRepo.findByName(name);
+  }
 
-    // Get role ID first
-    const roleIdResult = await (connection.kv as Deno.Kv).get<UUID>(
-      KeyPatterns.roles.byName(name),
-    );
+  // Create new role
+  static async createRole(
+    roleData: Omit<Role, "id" | "createdAt" | "updatedAt">,
+  ): Promise<Role> {
+    return await this.roleRepo.create(roleData);
+  }
 
-    if (!roleIdResult.value) {
-      return null;
+  // Update role
+  static async updateRole(
+    roleId: UUID,
+    updates: Partial<Role>,
+  ): Promise<Role | null> {
+    return await this.roleRepo.update(roleId, updates);
+  }
+
+  // Delete role
+  static async deleteRole(roleId: UUID): Promise<boolean> {
+    const role = await this.roleRepo.findById(roleId);
+    if (!role || role.isSystem) {
+      return false; // Cannot delete system roles
     }
 
-    return await this.getRole(roleIdResult.value);
+    return await this.roleRepo.hardDelete(roleId);
   }
 
   // Assign role to user
-  static async assignRoleToUser(userId: UUID, roleId: UUID): Promise<boolean> {
+  static async assignRole(
+    userId: UUID,
+    roleId: UUID,
+    assignedBy: UUID,
+  ): Promise<boolean> {
     const connection = db.getConnection();
+    const userRole: UserRole = {
+      userId,
+      roleId,
+      assignedAt: Date.now(),
+      assignedBy,
+    };
 
-    // Get current user roles
-    const userRolesResult = await (connection.kv as Deno.Kv).get<UUID[]>(
-      KeyPatterns.users.roles(userId),
+    await (connection.kv as Deno.Kv).set(
+      KeyPatterns.userRoles.byUserRole(userId, roleId),
+      userRole,
     );
 
-    const currentRoles = userRolesResult.value || [];
+    return true;
+  }
 
-    // Add role if not already assigned
-    if (!currentRoles.includes(roleId)) {
-      const updatedRoles = [...currentRoles, roleId];
-      await (connection.kv as Deno.Kv).set(
-        KeyPatterns.users.roles(userId),
-        updatedRoles,
-      );
-      return true;
-    }
-
-    return false;
+  // Alias for assignRole to match usage in auth service
+  static async assignRoleToUser(
+    userId: UUID,
+    roleId: UUID,
+    assignedBy?: UUID,
+  ): Promise<boolean> {
+    return await this.assignRole(userId, roleId, assignedBy || "system");
   }
 
   // Remove role from user
-  static async removeRoleFromUser(
-    userId: UUID,
-    roleId: UUID,
-  ): Promise<boolean> {
+  static async removeRole(userId: UUID, roleId: UUID): Promise<boolean> {
     const connection = db.getConnection();
-
-    // Get current user roles
-    const userRolesResult = await (connection.kv as Deno.Kv).get<UUID[]>(
-      KeyPatterns.users.roles(userId),
+    await (connection.kv as Deno.Kv).delete(
+      KeyPatterns.userRoles.byUserRole(userId, roleId),
     );
 
-    const currentRoles = userRolesResult.value || [];
-    const updatedRoles = currentRoles.filter((id) => id !== roleId);
-
-    if (updatedRoles.length !== currentRoles.length) {
-      await (connection.kv as Deno.Kv).set(
-        KeyPatterns.users.roles(userId),
-        updatedRoles,
-      );
-      return true;
-    }
-
-    return false;
+    return true;
   }
 
   // Get user roles
   static async getUserRoles(userId: UUID): Promise<Role[]> {
     const connection = db.getConnection();
-
-    // Get role IDs
-    const userRolesResult = await (connection.kv as Deno.Kv).get<UUID[]>(
-      KeyPatterns.users.roles(userId),
-    );
-
-    const roleIds = userRolesResult.value || [];
     const roles: Role[] = [];
 
-    // Fetch role details
-    for (const roleId of roleIds) {
-      const role = await this.getRole(roleId);
-      if (role) {
-        roles.push(role);
+    const iterator = (connection.kv as Deno.Kv).list<UserRole>({
+      prefix: KeyPatterns.userRoles.byUser(userId),
+    });
+
+    for await (const { value } of iterator) {
+      if (value) {
+        const role = await this.roleRepo.findById(value.roleId);
+        if (role) {
+          roles.push(role);
+        }
       }
     }
 
     return roles;
   }
 
-  // Get user permissions (flattened from all roles)
-  static async getUserPermissions(userId: UUID): Promise<string[]> {
+  // Get user permissions (aggregated from all roles)
+  static async getUserPermissions(userId: UUID): Promise<Permission[]> {
     const roles = await this.getUserRoles(userId);
-    const permissions = new Set<string>();
+    const permissions = new Set<Permission>();
 
     for (const role of roles) {
       for (const permission of role.permissions) {
@@ -140,306 +363,76 @@ export class RBACManager {
     return Array.from(permissions);
   }
 
-  // Check if user has permission
+  // Check if user has specific permission
   static async userHasPermission(
     userId: UUID,
-    permission: string,
+    permission: Permission,
   ): Promise<boolean> {
     const permissions = await this.getUserPermissions(userId);
-    return permissions.includes(permission) || permissions.includes("*");
+    return permissions.includes(permission);
   }
 
-  // Check if user has any of the required permissions
-  static async userHasAnyPermission(
-    userId: UUID,
-    requiredPermissions: string[],
-  ): Promise<boolean> {
-    const permissions = await this.getUserPermissions(userId);
-
-    // Check for wildcard permission
-    if (permissions.includes("*")) {
-      return true;
-    }
-
-    return requiredPermissions.some((perm) => permissions.includes(perm));
-  }
-
-  // Check if user has all required permissions
-  static async userHasAllPermissions(
-    userId: UUID,
-    requiredPermissions: string[],
-  ): Promise<boolean> {
-    const permissions = await this.getUserPermissions(userId);
-
-    // Check for wildcard permission
-    if (permissions.includes("*")) {
-      return true;
-    }
-
-    return requiredPermissions.every((perm) => permissions.includes(perm));
-  }
-
-  // Check if user has role
+  // Check if user has specific role
   static async userHasRole(userId: UUID, roleName: string): Promise<boolean> {
     const roles = await this.getUserRoles(userId);
     return roles.some((role) => role.name === roleName);
   }
 
-  // List all roles
-  static async listRoles(): Promise<Role[]> {
-    const connection = db.getConnection();
-    const roles: Role[] = [];
+  // Check if user has any of the specified permissions
+  static async userHasAnyPermission(
+    userId: UUID,
+    permissions: Permission[],
+  ): Promise<boolean> {
+    const userPermissions = await this.getUserPermissions(userId);
+    return permissions.some((permission) =>
+      userPermissions.includes(permission)
+    );
+  }
 
-    const iterator = (connection.kv as Deno.Kv).list<Role>({
-      prefix: KeyPatterns.roles.all(),
+  // Check if user has all of the specified permissions
+  static async userHasAllPermissions(
+    userId: UUID,
+    permissions: Permission[],
+  ): Promise<boolean> {
+    const userPermissions = await this.getUserPermissions(userId);
+    return permissions.every((permission) =>
+      userPermissions.includes(permission)
+    );
+  }
+
+  // Get users with specific role
+  static async getUsersWithRole(roleId: UUID): Promise<UUID[]> {
+    const connection = db.getConnection();
+    const userIds: UUID[] = [];
+
+    const iterator = (connection.kv as Deno.Kv).list<UserRole>({
+      prefix: KeyPatterns.userRoles.byRole(roleId),
     });
 
     for await (const { value } of iterator) {
       if (value) {
-        roles.push(value);
+        userIds.push(value.userId);
       }
     }
 
-    return roles.sort((a, b) => a.name.localeCompare(b.name));
+    return userIds;
   }
 
-  // Update role
-  static async updateRole(
-    roleId: UUID,
-    updates: Partial<Omit<Role, "id" | "createdAt">>,
-  ): Promise<Role | null> {
-    const existingRole = await this.getRole(roleId);
-    if (!existingRole) {
-      return null;
+  // Get users with specific permission
+  static async getUsersWithPermission(permission: Permission): Promise<UUID[]> {
+    const roles = await this.roleRepo.findAll();
+    const rolesWithPermission = roles.filter((role) =>
+      role.permissions.includes(permission)
+    );
+
+    const userIds = new Set<UUID>();
+    for (const role of rolesWithPermission) {
+      const roleUserIds = await this.getUsersWithRole(role.id);
+      roleUserIds.forEach((id) => userIds.add(id));
     }
 
-    const updatedRole: Role = {
-      ...existingRole,
-      ...updates,
-      updatedAt: Date.now(),
-    };
-
-    const connection = db.getConnection();
-    const atomic = (connection.kv as Deno.Kv).atomic();
-
-    // Update role
-    atomic.set(KeyPatterns.roles.byId(roleId), updatedRole);
-
-    // Update name index if name changed
-    if (updates.name && updates.name !== existingRole.name) {
-      atomic.delete(KeyPatterns.roles.byName(existingRole.name));
-      atomic.set(KeyPatterns.roles.byName(updates.name), roleId);
-    }
-
-    await atomic.commit();
-    return updatedRole;
-  }
-
-  // Delete role
-  static async deleteRole(roleId: UUID): Promise<boolean> {
-    const role = await this.getRole(roleId);
-    if (!role) {
-      return false;
-    }
-
-    const connection = db.getConnection();
-    const atomic = (connection.kv as Deno.Kv).atomic();
-
-    // Remove role
-    atomic.delete(KeyPatterns.roles.byId(roleId));
-    atomic.delete(KeyPatterns.roles.byName(role.name));
-
-    await atomic.commit();
-
-    // TODO: Remove role from all users who have it
-    // This would require scanning all users, which could be expensive
-    // Consider implementing a background cleanup job
-
-    return true;
+    return Array.from(userIds);
   }
 }
 
-// Permission constants for masmaCMS
-export const Permissions = {
-  // System permissions
-  SYSTEM_ADMIN: "system.admin",
-  SYSTEM_SETTINGS: "system.settings",
-  SYSTEM_BACKUP: "system.backup",
-  SYSTEM_LOGS: "system.logs",
-
-  // User management
-  USERS_CREATE: "users.create",
-  USERS_READ: "users.read",
-  USERS_UPDATE: "users.update",
-  USERS_DELETE: "users.delete",
-  USERS_MANAGE_ROLES: "users.manage_roles",
-
-  // Content management
-  CONTENT_CREATE: "content.create",
-  CONTENT_READ: "content.read",
-  CONTENT_UPDATE: "content.update",
-  CONTENT_DELETE: "content.delete",
-  CONTENT_PUBLISH: "content.publish",
-  CONTENT_MODERATE: "content.moderate",
-
-  // Media management
-  MEDIA_UPLOAD: "media.upload",
-  MEDIA_READ: "media.read",
-  MEDIA_UPDATE: "media.update",
-  MEDIA_DELETE: "media.delete",
-  MEDIA_ORGANIZE: "media.organize",
-
-  // Schema management
-  SCHEMAS_CREATE: "schemas.create",
-  SCHEMAS_READ: "schemas.read",
-  SCHEMAS_UPDATE: "schemas.update",
-  SCHEMAS_DELETE: "schemas.delete",
-
-  // Translation management
-  TRANSLATIONS_CREATE: "translations.create",
-  TRANSLATIONS_READ: "translations.read",
-  TRANSLATIONS_UPDATE: "translations.update",
-  TRANSLATIONS_DELETE: "translations.delete",
-
-  // API access
-  API_READ: "api.read",
-  API_WRITE: "api.write",
-  API_ADMIN: "api.admin",
-
-  // Team management
-  TEAMS_CREATE: "teams.create",
-  TEAMS_READ: "teams.read",
-  TEAMS_UPDATE: "teams.update",
-  TEAMS_DELETE: "teams.delete",
-  TEAMS_MANAGE_MEMBERS: "teams.manage_members",
-
-  // Workflows
-  WORKFLOWS_CREATE: "workflows.create",
-  WORKFLOWS_READ: "workflows.read",
-  WORKFLOWS_UPDATE: "workflows.update",
-  WORKFLOWS_DELETE: "workflows.delete",
-  WORKFLOWS_MANAGE: "workflows.manage",
-} as const;
-
-// Default roles for masmaCMS
-export const DefaultRoles = {
-  SUPER_ADMIN: {
-    name: "Super Admin",
-    description: "Full system access with all permissions",
-    permissions: ["*"], // Wildcard permission
-    isSystem: true,
-    level: 1000,
-  },
-
-  ADMIN: {
-    name: "Administrator",
-    description: "Full content and user management access",
-    permissions: [
-      Permissions.USERS_CREATE,
-      Permissions.USERS_READ,
-      Permissions.USERS_UPDATE,
-      Permissions.USERS_DELETE,
-      Permissions.CONTENT_CREATE,
-      Permissions.CONTENT_READ,
-      Permissions.CONTENT_UPDATE,
-      Permissions.CONTENT_DELETE,
-      Permissions.CONTENT_PUBLISH,
-      Permissions.CONTENT_MODERATE,
-      Permissions.MEDIA_UPLOAD,
-      Permissions.MEDIA_READ,
-      Permissions.MEDIA_UPDATE,
-      Permissions.MEDIA_DELETE,
-      Permissions.MEDIA_ORGANIZE,
-      Permissions.SCHEMAS_CREATE,
-      Permissions.SCHEMAS_READ,
-      Permissions.SCHEMAS_UPDATE,
-      Permissions.SCHEMAS_DELETE,
-      Permissions.API_READ,
-      Permissions.API_WRITE,
-    ],
-    isSystem: true,
-    level: 900,
-  },
-
-  EDITOR: {
-    name: "Editor",
-    description: "Content creation and editing with publishing rights",
-    permissions: [
-      Permissions.CONTENT_CREATE,
-      Permissions.CONTENT_READ,
-      Permissions.CONTENT_UPDATE,
-      Permissions.CONTENT_PUBLISH,
-      Permissions.MEDIA_UPLOAD,
-      Permissions.MEDIA_READ,
-      Permissions.MEDIA_UPDATE,
-      Permissions.TRANSLATIONS_CREATE,
-      Permissions.TRANSLATIONS_READ,
-      Permissions.TRANSLATIONS_UPDATE,
-      Permissions.API_READ,
-    ],
-    isSystem: true,
-    level: 500,
-  },
-
-  AUTHOR: {
-    name: "Author",
-    description: "Content creation and editing without publishing rights",
-    permissions: [
-      Permissions.CONTENT_CREATE,
-      Permissions.CONTENT_READ,
-      Permissions.CONTENT_UPDATE,
-      Permissions.MEDIA_UPLOAD,
-      Permissions.MEDIA_READ,
-      Permissions.TRANSLATIONS_READ,
-      Permissions.API_READ,
-    ],
-    isSystem: true,
-    level: 300,
-  },
-
-  VIEWER: {
-    name: "Viewer",
-    description: "Read-only access to content and basic features",
-    permissions: [
-      Permissions.CONTENT_READ,
-      Permissions.MEDIA_READ,
-      Permissions.TRANSLATIONS_READ,
-      Permissions.API_READ,
-    ],
-    isSystem: true,
-    level: 100,
-  },
-} as const;
-
-// Role hierarchy utility
-export class RoleHierarchy {
-  // Check if role A has higher level than role B
-  static isHigherLevel(roleA: Role, roleB: Role): boolean {
-    return roleA.level > roleB.level;
-  }
-
-  // Check if user can manage another user based on role hierarchy
-  static async canManageUser(
-    managerId: UUID,
-    targetUserId: UUID,
-  ): Promise<boolean> {
-    const managerRoles = await RBACManager.getUserRoles(managerId);
-    const targetRoles = await RBACManager.getUserRoles(targetUserId);
-
-    // Get highest level for each user
-    const managerLevel = Math.max(...managerRoles.map((r) => r.level));
-    const targetLevel = Math.max(...targetRoles.map((r) => r.level));
-
-    return managerLevel > targetLevel;
-  }
-
-  // Get role hierarchy tree
-  static async getRoleHierarchy(): Promise<
-    Array<{ role: Role; level: number }>
-  > {
-    const roles = await RBACManager.listRoles();
-    return roles
-      .map((role) => ({ role, level: role.level }))
-      .sort((a, b) => b.level - a.level);
-  }
-}
+export default RBACManager;

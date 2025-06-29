@@ -1,5 +1,6 @@
 // Plugin Types
-import type { BaseEntity, Permission, UUID } from "./base.ts";
+import type { BaseEntity, UUID } from "./base.ts";
+import type { Permission } from "./auth.ts";
 
 export interface Plugin extends BaseEntity {
   name: string;

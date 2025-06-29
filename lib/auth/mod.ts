@@ -17,23 +17,15 @@ export {
 } from "./jwt.ts";
 export { PasswordManager, PasswordResetManager } from "./password.ts";
 export { DeviceFingerprinting, SessionManager } from "./sessions.ts";
-export {
-  DefaultRoles,
-  Permissions,
-  RBACManager,
-  RoleHierarchy,
-} from "./rbac.ts";
+export { ALL_PERMISSIONS, DEFAULT_ROLES, RBACManager } from "./rbac.ts";
 export { AuthService as default } from "./service.ts";
 export {
-  authMiddleware,
+  createApiKeyAuthMiddleware,
+  createAuthMiddleware,
+  createCombinedAuthMiddleware,
   getAuthContext,
-  getCurrentUserId,
+  getUserId,
   hasPermission,
   hasRole,
-  isAuthenticated,
-  requireAdmin,
-  requireEditor,
-  requirePermissions,
-  requireRoles,
 } from "./middleware.ts";
 export { userRepository } from "./repositories/user.ts";

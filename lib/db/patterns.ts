@@ -22,9 +22,9 @@ export const KeyPatterns = {
 
   // Role Management
   roles: {
-    byId: (id: UUID) => ["roles", id],
-    byName: (name: string) => ["roles_by_name", name.toLowerCase()],
-    permissions: (roleId: UUID) => ["roles", roleId, "permissions"],
+    byId: (id: UUID) => ["roles", "id", id],
+    byName: (name: string) => ["roles", "name", name],
+    permissions: (roleId: UUID) => ["roles", "permissions", roleId],
     all: () => ["roles"],
   },
 
@@ -139,12 +139,31 @@ export const KeyPatterns = {
     ) => ["translations", locale, "namespace", namespace],
     byLocale: (locale: Locale) => ["translations", locale],
     namespaces: () => ["translation_namespaces"],
-    locales: () => ["locales"],
+    locales: (localeCode?: string) =>
+      localeCode ? ["locales", localeCode] : ["locales"],
     memory: (
       sourceLocale: Locale,
       targetLocale: Locale,
     ) => ["translation_memory", sourceLocale, targetLocale],
     all: () => ["translations"],
+  },
+
+  // Translation Memory
+  translationMemory: {
+    byId: (id: UUID) => ["translation_memory", id],
+    byHash: (
+      hash: string,
+      sourceLocale: Locale,
+      targetLocale: Locale,
+    ) => ["translation_memory_by_hash", hash, sourceLocale, targetLocale],
+    byLocales: (
+      sourceLocale: Locale,
+      targetLocale: Locale,
+    ) => ["translation_memory_by_locales", sourceLocale, targetLocale],
+    byQuality: (
+      quality: "verified" | "reviewed" | "unverified",
+    ) => ["translation_memory_by_quality", quality],
+    all: () => ["translation_memory"],
   },
 
   // Team Management
@@ -159,11 +178,20 @@ export const KeyPatterns = {
 
   // API Keys
   apiKeys: {
-    byId: (id: UUID) => ["api_keys", id],
-    byKey: (key: string) => ["api_keys_by_key", key],
-    byUserId: (userId: UUID) => ["api_keys_by_user", userId],
+    byId: (id: UUID) => ["api_keys", "id", id],
+    byKey: (hashedKey: string) => ["api_keys", "key", hashedKey],
+    byUserId: (userId: UUID) => ["api_keys", "by_user", userId],
     active: () => ["api_keys", "active"],
     all: () => ["api_keys"],
+    usage: (
+      keyId: UUID,
+      usageId: UUID,
+    ) => ["api_keys", "usage", keyId, usageId],
+    usageByKey: (keyId: UUID) => ["api_keys", "usage", keyId],
+    rateLimit: (
+      keyId: UUID,
+      window: string,
+    ) => ["api_keys", "rate_limit", keyId, window],
   },
 
   // Webhooks
@@ -276,6 +304,13 @@ export const KeyPatterns = {
     emailVerification: (token: string) => ["temp", "email_verification", token],
     uploads: (sessionId: string) => ["temp", "uploads", sessionId],
     previews: (contentId: UUID) => ["temp", "previews", contentId],
+  },
+
+  // User Roles (Many-to-Many relationship)
+  userRoles: {
+    byUserRole: (userId: UUID, roleId: UUID) => ["user_roles", userId, roleId],
+    byUser: (userId: UUID) => ["user_roles", "by_user", userId],
+    byRole: (roleId: UUID) => ["user_roles", "by_role", roleId],
   },
 } as const;
 

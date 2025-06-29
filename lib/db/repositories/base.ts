@@ -13,7 +13,7 @@ import type {
 } from "@/types";
 import { db } from "../connection.ts";
 import { KeyBuilder } from "../patterns.ts";
-import { v4 as generateUUID } from "uuid";
+// Using built-in crypto.randomUUID() for UUID generation
 
 export abstract class BaseRepository<T extends BaseEntity> {
   protected abstract entityName: string;
@@ -27,7 +27,7 @@ export abstract class BaseRepository<T extends BaseEntity> {
     const now = Date.now();
     const entity: T = {
       ...data,
-      id: generateUUID(),
+      id: crypto.randomUUID(),
       createdAt: now,
       updatedAt: now,
       createdBy: userId,
@@ -356,7 +356,7 @@ export abstract class BaseRepository<T extends BaseEntity> {
     atomic: Deno.AtomicOperation,
   ): Promise<void> {
     const auditEntry: AuditEntry = {
-      id: generateUUID(),
+      id: crypto.randomUUID(),
       action,
       userId: userId || "system",
       timestamp: Date.now(),

@@ -3,6 +3,7 @@
 
 import type {
   DeviceInfo,
+  JWTPayload,
   JWTTokens,
   LoginRequest,
   RegisterRequest,
@@ -396,6 +397,15 @@ export class AuthService {
   // Get session statistics
   static async getSessionStats() {
     return await SessionManager.getSessionStats();
+  }
+
+  // Validate JWT token (alias for validateToken)
+  static async validateJWT(token: string): Promise<{
+    isValid: boolean;
+    payload?: JWTPayload;
+    reason?: string;
+  }> {
+    return await this.validateToken(token);
   }
 }
 

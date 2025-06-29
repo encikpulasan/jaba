@@ -69,24 +69,7 @@ export type WorkflowStatus =
   | "rejected";
 export type UserStatus = "active" | "inactive" | "suspended" | "pending";
 
-// Permission types
-export type Permission =
-  | "content.create"
-  | "content.read"
-  | "content.update"
-  | "content.delete"
-  | "content.publish"
-  | "user.create"
-  | "user.read"
-  | "user.update"
-  | "user.delete"
-  | "admin.settings"
-  | "admin.system"
-  | "workflow.manage"
-  | "media.upload"
-  | "media.delete"
-  | "plugin.install"
-  | "plugin.configure";
+// Permission types - exported from auth.ts to avoid conflicts
 
 // Error types
 export interface CMSError {
@@ -176,9 +159,8 @@ export type {
 
 // Export i18n types
 export type {
-  FormatOptions,
   LocaleConfig,
   PluralRule,
-  TranslationKey,
+  Translation,
   TranslationNamespace,
 } from "./i18n.ts";

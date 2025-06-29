@@ -57,21 +57,5 @@ export type WorkflowStatus =
   | "rejected";
 export type UserStatus = "active" | "inactive" | "suspended" | "pending";
 
-// Permission types
-export type Permission =
-  | "content.create"
-  | "content.read"
-  | "content.update"
-  | "content.delete"
-  | "content.publish"
-  | "user.create"
-  | "user.read"
-  | "user.update"
-  | "user.delete"
-  | "admin.settings"
-  | "admin.system"
-  | "workflow.manage"
-  | "media.upload"
-  | "media.delete"
-  | "plugin.install"
-  | "plugin.configure";
+// Permission types - removing from base.ts to avoid conflicts with auth.ts
+// Now exported from auth.ts module
