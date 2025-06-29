@@ -1,0 +1,31 @@
+{
+  "app": {
+    "name": "masmaCMS",
+    "description": "Enterprise Headless CMS",
+    "welcome": "Welcome to masmaCMS"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "content": "Content",
+    "media": "Media",
+    "users": "Users",
+    "settings": "Settings"
+  },
+  "actions": {
+    "create": "Create",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "publish": "Publish",
+    "draft": "Draft"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot Password?"
+  }
+} 

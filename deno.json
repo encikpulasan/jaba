@@ -4,10 +4,20 @@
     "check": "deno fmt --check && deno lint && deno check **/*.ts && deno check **/*.tsx",
     "cli": "echo \"import '\\$fresh/src/dev/cli.ts'\" | deno run --unstable -A -",
     "manifest": "deno task cli manifest $(pwd)",
-    "start": "deno run -A --watch=static/,routes/ dev.ts",
+    "start": "deno run -A --watch=static/,routes/,lib/,utils/,middleware/ dev.ts",
     "build": "deno run -A dev.ts build",
     "preview": "deno run -A main.ts",
-    "update": "deno run -A -r https://fresh.deno.dev/update ."
+    "update": "deno run -A -r https://fresh.deno.dev/update .",
+    "dev": "deno task start",
+    "test": "deno test --allow-all",
+    "test:watch": "deno test --allow-all --watch",
+    "migrate": "deno run -A scripts/migrate.ts",
+    "seed": "deno run -A lib/db/seed.ts",
+    "backup": "deno run -A lib/db/backup.ts",
+    "restore": "deno run -A lib/db/restore.ts",
+    "generate:types": "deno run -A scripts/generate-types.ts",
+    "generate:docs": "deno run -A scripts/generate-docs.ts",
+    "setup": "deno run -A scripts/setup.ts"
   },
   "lint": {
     "rules": {
@@ -15,10 +25,27 @@
         "fresh",
         "recommended"
       ]
-    }
+    },
+    "exclude": [
+      "**/_fresh/*",
+      "**/node_modules/*",
+      "**/data/*",
+      "**/static/uploads/*"
+    ]
+  },
+  "fmt": {
+    "exclude": [
+      "**/_fresh/*",
+      "**/node_modules/*",
+      "**/data/*",
+      "**/static/uploads/*"
+    ]
   },
   "exclude": [
-    "**/_fresh/*"
+    "**/_fresh/*",
+    "**/node_modules/*",
+    "**/data/*",
+    "**/static/uploads/*"
   ],
   "imports": {
     "$fresh/": "https://deno.land/x/fresh@1.7.3/",
@@ -29,11 +56,58 @@
     "tailwindcss": "npm:tailwindcss@3.4.1",
     "tailwindcss/": "npm:/tailwindcss@3.4.1/",
     "tailwindcss/plugin": "npm:/tailwindcss@3.4.1/plugin.js",
-    "$std/": "https://deno.land/std@0.216.0/"
+    "$std/": "https://deno.land/std@0.216.0/",
+    "bcrypt": "https://deno.land/x/bcrypt@v0.4.1/mod.ts",
+    "jose": "https://deno.land/x/jose@v5.2.0/index.ts",
+    "otpauth": "https://esm.sh/otpauth@9.2.2",
+    "zod": "https://deno.land/x/zod@v3.22.4/mod.ts",
+    "marked": "https://esm.sh/marked@12.0.0",
+    "marked-highlight": "https://esm.sh/marked-highlight@2.0.6",
+    "prismjs": "https://esm.sh/prismjs@1.29.0",
+    "gray-matter": "https://esm.sh/gray-matter@4.0.3",
+    "remark": "https://esm.sh/remark@15.0.1",
+    "remark-parse": "https://esm.sh/remark-parse@11.0.0",
+    "remark-stringify": "https://esm.sh/remark-stringify@11.0.0",
+    "graphql": "https://esm.sh/graphql@16.8.1",
+    "graphql-yoga": "https://esm.sh/graphql-yoga@5.1.1",
+    "graphql-scalars": "https://esm.sh/graphql-scalars@1.22.4",
+    "i18next": "https://esm.sh/i18next@23.7.16",
+    "i18next-fs-backend": "https://esm.sh/i18next-fs-backend@2.3.1",
+    "accept-language-parser": "https://esm.sh/accept-language-parser@1.5.0",
+    "imagescript": "https://deno.land/x/imagescript@1.2.15/mod.ts",
+    "sharp": "https://esm.sh/sharp@0.33.2",
+    "mime": "https://deno.land/x/mimetypes@v1.0.0/mod.ts",
+    "file-type": "https://esm.sh/file-type@19.0.0",
+    "uuid": "https://deno.land/std@0.216.0/uuid/mod.ts",
+    "date-fns": "https://esm.sh/date-fns@3.0.6",
+    "slugify": "https://esm.sh/slugify@1.6.6",
+    "sanitize-html": "https://esm.sh/sanitize-html@2.11.0",
+    "validator": "https://esm.sh/validator@13.11.0",
+    "nodemailer": "https://esm.sh/nodemailer@6.9.8",
+    "mock": "https://deno.land/std@0.216.0/testing/mock.ts",
+    "asserts": "https://deno.land/std@0.216.0/assert/mod.ts",
+    "redis": "https://deno.land/x/redis@v0.32.3/mod.ts",
+    "cliffy": "https://deno.land/x/cliffy@v1.0.0-rc.3/mod.ts",
+    "colors": "https://deno.land/std@0.216.0/fmt/colors.ts",
+    "@/": "./",
+    "@/lib": "./lib/mod.ts",
+    "@/types": "./types/mod.ts",
+    "@/utils": "./utils/mod.ts",
+    "@/components": "./components/mod.ts",
+    "@/islands": "./islands/mod.ts",
+    "@/middleware": "./middleware/mod.ts"
   },
   "compilerOptions": {
     "jsx": "react-jsx",
-    "jsxImportSource": "preact"
+    "jsxImportSource": "preact",
+    "lib": ["dom", "dom.iterable", "es2022"],
+    "strict": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
   },
-  "nodeModulesDir": true
+  "nodeModulesDir": "auto",
+  "unstable": ["kv", "cron"]
 }

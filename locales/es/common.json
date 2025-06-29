@@ -1,0 +1,31 @@
+{
+  "app": {
+    "name": "masmaCMS",
+    "description": "CMS Empresarial Sin Cabeza",
+    "welcome": "Bienvenido a masmaCMS"
+  },
+  "navigation": {
+    "dashboard": "Panel",
+    "content": "Contenido",
+    "media": "Medios",
+    "users": "Usuarios",
+    "settings": "Configuración"
+  },
+  "actions": {
+    "create": "Crear",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "publish": "Publicar",
+    "draft": "Borrador"
+  },
+  "auth": {
+    "login": "Iniciar Sesión",
+    "logout": "Cerrar Sesión",
+    "register": "Registrarse",
+    "email": "Correo",
+    "password": "Contraseña",
+    "forgotPassword": "¿Olvidaste tu contraseña?"
+  }
+} 
