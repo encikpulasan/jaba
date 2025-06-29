@@ -16,6 +16,7 @@ import * as $api_media_index from "./routes/api/media/index.ts";
 import * as $api_organization_slug_ from "./routes/api/organization/[slug].ts";
 import * as $api_organization_index from "./routes/api/organization/index.ts";
 import * as $api_performance from "./routes/api/performance.ts";
+import * as $api_security_audit from "./routes/api/security/audit.ts";
 import * as $api_workflow_index from "./routes/api/workflow/index.ts";
 import * as $greet_name_ from "./routes/greet/[name].tsx";
 import * as $index from "./routes/index.tsx";
@@ -39,6 +40,7 @@ const manifest = {
     "./routes/api/organization/[slug].ts": $api_organization_slug_,
     "./routes/api/organization/index.ts": $api_organization_index,
     "./routes/api/performance.ts": $api_performance,
+    "./routes/api/security/audit.ts": $api_security_audit,
     "./routes/api/workflow/index.ts": $api_workflow_index,
     "./routes/greet/[name].tsx": $greet_name_,
     "./routes/index.tsx": $index,
