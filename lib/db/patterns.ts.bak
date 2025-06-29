@@ -553,6 +553,15 @@ export const KeyPatterns = {
     all: () => ["audit_logs"],
   },
 
+  // Plugin Management
+  plugins: {
+    byId: (id: UUID) => ["plugins", id],
+    byName: (name: string) => ["plugins_by_name", name],
+    active: () => ["plugins", "active"],
+    config: (pluginId: UUID) => ["plugins", pluginId, "config"],
+    data: (pluginId: UUID, key: string) => ["plugins", pluginId, "data", key],
+    all: () => ["plugins"],
+  },
 
   // Search Indexes
   search: {
