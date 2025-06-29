@@ -134,6 +134,9 @@ export class MigrationManager {
   }
 }
 
+// Import additional migrations
+import { defaultRolesMigration } from "../../migrations/003_default_roles.ts";
+
 // Default migrations for masmaCMS
 export const defaultMigrations: Migration[] = [
   {
@@ -337,6 +340,8 @@ export const defaultMigrations: Migration[] = [
       await atomic.commit();
     },
   },
+  // Add the default roles migration
+  defaultRolesMigration,
 ];
 
 // Export migration manager instance
