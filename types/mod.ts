@@ -7,6 +7,7 @@ export * from "./user.ts";
 export * from "./i18n.ts";
 export * from "./media.ts";
 export * from "./workflow.ts";
+export * from "./organization.ts";
 export * from "./api.ts";
 export * from "./settings.ts";
 export * from "./plugin.ts";

@@ -13,6 +13,8 @@ import * as $api_demo_validate_key from "./routes/api/demo/validate-key.ts";
 import * as $api_graphql from "./routes/api/graphql.ts";
 import * as $api_joke from "./routes/api/joke.ts";
 import * as $api_media_index from "./routes/api/media/index.ts";
+import * as $api_organization_slug_ from "./routes/api/organization/[slug].ts";
+import * as $api_organization_index from "./routes/api/organization/index.ts";
 import * as $api_performance from "./routes/api/performance.ts";
 import * as $api_workflow_index from "./routes/api/workflow/index.ts";
 import * as $greet_name_ from "./routes/greet/[name].tsx";
@@ -34,6 +36,8 @@ const manifest = {
     "./routes/api/graphql.ts": $api_graphql,
     "./routes/api/joke.ts": $api_joke,
     "./routes/api/media/index.ts": $api_media_index,
+    "./routes/api/organization/[slug].ts": $api_organization_slug_,
+    "./routes/api/organization/index.ts": $api_organization_index,
     "./routes/api/performance.ts": $api_performance,
     "./routes/api/workflow/index.ts": $api_workflow_index,
     "./routes/greet/[name].tsx": $greet_name_,

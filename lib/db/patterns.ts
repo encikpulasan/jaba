@@ -101,6 +101,122 @@ export const KeyPatterns = {
     all: () => ["settings"],
   },
 
+  // Organization & Multi-tenancy Management
+  organization: {
+    // Core organization patterns
+    byId: (id: UUID) => ["organization", id],
+    bySlug: (slug: string) => ["organization_by_slug", slug],
+    byDomain: (domain: string) => ["organization_by_domain", domain],
+    byOwner: (
+      ownerId: UUID,
+      orgId: UUID,
+    ) => ["organization_by_owner", ownerId, orgId],
+    byStatus: (
+      status: string,
+      orgId: UUID,
+    ) => ["organization_by_status", status, orgId],
+    byPlan: (
+      plan: string,
+      orgId: UUID,
+    ) => ["organization_by_plan", plan, orgId],
+
+    // Team management
+    team: (id: UUID) => ["organization", "team", id],
+    teamByOrg: (
+      orgId: UUID,
+      teamId: UUID,
+    ) => ["organization_team_by_org", orgId, teamId],
+    teamByCreator: (
+      creatorId: UUID,
+      teamId: UUID,
+    ) => ["organization_team_by_creator", creatorId, teamId],
+    defaultTeam: (orgId: UUID) => ["organization_default_team", orgId],
+
+    // Team membership
+    teamMember: (id: UUID) => ["organization", "team_member", id],
+    teamMemberByTeam: (
+      teamId: UUID,
+      memberId: UUID,
+    ) => ["organization_team_member_by_team", teamId, memberId],
+    teamMemberByUser: (
+      userId: UUID,
+      memberId: UUID,
+    ) => ["organization_team_member_by_user", userId, memberId],
+    teamMemberByOrg: (
+      orgId: UUID,
+      memberId: UUID,
+    ) => ["organization_team_member_by_org", orgId, memberId],
+
+    // Invitations
+    invitation: (id: UUID) => ["organization", "invitation", id],
+    invitationByOrg: (
+      orgId: UUID,
+      invitationId: UUID,
+    ) => ["organization_invitation_by_org", orgId, invitationId],
+    invitationByEmail: (
+      email: string,
+      invitationId: UUID,
+    ) => ["organization_invitation_by_email", email, invitationId],
+    invitationByToken: (
+      token: string,
+    ) => ["organization_invitation_by_token", token],
+
+    // API Keys
+    apiKey: (id: UUID) => ["organization", "api_key", id],
+    apiKeyByOrg: (
+      orgId: UUID,
+      keyId: UUID,
+    ) => ["organization_api_key_by_org", orgId, keyId],
+    apiKeyByHash: (
+      keyHash: string,
+    ) => ["organization_api_key_by_hash", keyHash],
+    apiKeyByCreator: (
+      creatorId: UUID,
+      keyId: UUID,
+    ) => ["organization_api_key_by_creator", creatorId, keyId],
+
+    // Audit logs
+    auditLog: (id: UUID) => ["organization", "audit_log", id],
+    auditLogByOrg: (
+      orgId: UUID,
+      logId: UUID,
+    ) => ["organization_audit_log_by_org", orgId, logId],
+    auditLogByUser: (
+      userId: UUID,
+      logId: UUID,
+    ) => ["organization_audit_log_by_user", userId, logId],
+    auditLogByAction: (
+      action: string,
+      logId: UUID,
+    ) => ["organization_audit_log_by_action", action, logId],
+    auditLogByDate: (
+      year: number,
+      month: number,
+      day: number,
+      logId: UUID,
+    ) => ["organization_audit_log_by_date", year, month, day, logId],
+
+    // Analytics
+    analytics: (
+      orgId: UUID,
+      period: string,
+    ) => ["organization", "analytics", orgId, period],
+
+    // Settings and configuration
+    setting: (
+      orgId: UUID,
+      category: string,
+      key: string,
+    ) => ["organization", "setting", orgId, category, key],
+
+    // Webhooks
+    webhook: (id: UUID) => ["organization", "webhook", id],
+    webhookByOrg: (
+      orgId: UUID,
+      webhookId: UUID,
+    ) => ["organization_webhook_by_org", orgId, webhookId],
+  },
+
   // Enhanced Workflow Management
   workflow: {
     // Templates
