@@ -13,6 +13,7 @@ export * from "./database.ts";
 export * from "./settings.ts";
 export * from "./organization.ts";
 export * from "./plugin.ts";
+export * from "./performance.ts";
 
 // Common utility types
 export type UUID = string;

@@ -553,7 +553,6 @@ export const KeyPatterns = {
     all: () => ["audit_logs"],
   },
 
-
   // Search Indexes
   search: {
     content: (
@@ -623,6 +622,32 @@ export const KeyPatterns = {
     byUserRole: (userId: UUID, roleId: UUID) => ["user_roles", userId, roleId],
     byUser: (userId: UUID) => ["user_roles", "by_user", userId],
     byRole: (roleId: UUID) => ["user_roles", "by_role", roleId],
+  },
+
+  // Performance Monitoring
+  performance: {
+    metric: (id: UUID) => ["performance_metric", id],
+    metricsByTime: (
+      type: string,
+      timeKey: string,
+      id: UUID,
+    ) => ["performance_metric_by_time", type, timeKey, id],
+    metricsByType: (
+      type: string,
+      id: UUID,
+    ) => ["performance_metric_by_type", type, id],
+    alert: (id: UUID) => ["performance_alert", id],
+    alertsByType: (
+      type: string,
+      id: UUID,
+    ) => ["performance_alert_by_type", type, id],
+    alertsByStatus: (
+      status: string,
+      id: UUID,
+    ) => ["performance_alert_by_status", status, id],
+    systemMetrics: (id: UUID) => ["performance_system_metrics", id],
+    cacheMetrics: (id: UUID) => ["performance_cache_metrics", id],
+    all: () => ["performance"],
   },
 } as const;
 
