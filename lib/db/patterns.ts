@@ -101,8 +101,129 @@ export const KeyPatterns = {
     all: () => ["settings"],
   },
 
-  // Workflow Management
-  workflows: {
+  // Enhanced Workflow Management
+  workflow: {
+    // Templates
+    template: (id: UUID) => ["workflow", "template", id],
+    templateByOrganization: (
+      orgId: UUID,
+      templateId: UUID,
+    ) => ["workflow", "template_by_org", orgId, templateId],
+    templateByCreator: (
+      creatorId: UUID,
+      templateId: UUID,
+    ) => ["workflow", "template_by_creator", creatorId, templateId],
+    defaultTemplate: (
+      templateId: UUID,
+    ) => ["workflow", "default_template", templateId],
+
+    // Instances
+    instance: (id: UUID) => ["workflow", "instance", id],
+    instanceByContent: (
+      contentId: UUID,
+      instanceId: UUID,
+    ) => ["workflow", "instance_by_content", contentId, instanceId],
+    instanceByTemplate: (
+      templateId: UUID,
+      instanceId: UUID,
+    ) => ["workflow", "instance_by_template", templateId, instanceId],
+    instanceByInitiator: (
+      initiatorId: UUID,
+      instanceId: UUID,
+    ) => ["workflow", "instance_by_initiator", initiatorId, instanceId],
+    instanceByStatus: (
+      status: string,
+      instanceId: UUID,
+    ) => ["workflow", "instance_by_status", status, instanceId],
+    instanceByAssignee: (
+      assigneeId: UUID,
+      instanceId: UUID,
+    ) => ["workflow", "instance_by_assignee", assigneeId, instanceId],
+
+    // Actions
+    action: (id: UUID) => ["workflow", "action", id],
+    actionByWorkflow: (
+      workflowId: UUID,
+      actionId: UUID,
+    ) => ["workflow", "action_by_workflow", workflowId, actionId],
+    actionByUser: (
+      userId: UUID,
+      actionId: UUID,
+    ) => ["workflow", "action_by_user", userId, actionId],
+
+    // Comments
+    comment: (id: UUID) => ["workflow", "comment", id],
+    commentByWorkflow: (
+      workflowId: UUID,
+      commentId: UUID,
+    ) => ["workflow", "comment_by_workflow", workflowId, commentId],
+    commentByMention: (
+      mentionedUserId: UUID,
+      commentId: UUID,
+    ) => ["workflow", "comment_by_mention", mentionedUserId, commentId],
+
+    // Assignments
+    assignment: (id: UUID) => ["workflow", "assignment", id],
+    assignmentByWorkflow: (
+      workflowId: UUID,
+      assignmentId: UUID,
+    ) => ["workflow", "assignment_by_workflow", workflowId, assignmentId],
+    assignmentByAssignee: (
+      assigneeId: UUID,
+      assignmentId: UUID,
+    ) => ["workflow", "assignment_by_assignee", assigneeId, assignmentId],
+
+    // Tasks
+    task: (id: UUID) => ["workflow", "task", id],
+    taskByWorkflow: (
+      workflowId: UUID,
+      taskId: UUID,
+    ) => ["workflow", "task_by_workflow", workflowId, taskId],
+    taskByAssignee: (
+      assigneeId: UUID,
+      taskId: UUID,
+    ) => ["workflow", "task_by_assignee", assigneeId, taskId],
+
+    // Notifications
+    notification: (id: UUID) => ["workflow", "notification", id],
+    notificationByRecipient: (
+      recipientId: UUID,
+      notificationId: UUID,
+    ) => ["workflow", "notification_by_recipient", recipientId, notificationId],
+    notificationByWorkflow: (
+      workflowId: UUID,
+      notificationId: UUID,
+    ) => ["workflow", "notification_by_workflow", workflowId, notificationId],
+
+    // Real-time Collaboration
+    activeUsers: (workflowId: UUID) => ["workflow", "active_users", workflowId],
+    lock: (id: UUID) => ["workflow", "lock", id],
+    lockByWorkflow: (
+      workflowId: UUID,
+      lockId: UUID,
+    ) => ["workflow", "lock_by_workflow", workflowId, lockId],
+
+    // Activity
+    activity: (id: UUID) => ["workflow", "activity", id],
+    activityByWorkflow: (
+      workflowId: UUID,
+      activityId: UUID,
+    ) => ["workflow", "activity_by_workflow", workflowId, activityId],
+
+    // Conflicts
+    conflict: (id: UUID) => ["workflow", "conflict", id],
+    conflictByWorkflow: (
+      workflowId: UUID,
+      conflictId: UUID,
+    ) => ["workflow", "conflict_by_workflow", workflowId, conflictId],
+
+    // Analytics
+    analytics: (
+      templateId?: UUID,
+      period?: string,
+    ) => ["workflow", "analytics", templateId || "all", period || "all"],
+
+    // Legacy patterns for backward compatibility
     byId: (id: UUID) => ["workflows", id],
     byName: (name: string) => ["workflows_by_name", name],
     stages: (workflowId: UUID) => ["workflows", workflowId, "stages"],
@@ -113,7 +234,7 @@ export const KeyPatterns = {
     all: () => ["workflows"],
   },
 
-  // Content Workflow States
+  // Content Workflow States (Legacy - keeping for backward compatibility)
   contentWorkflows: {
     byId: (id: UUID) => ["content_workflows", id],
     byContent: (contentId: UUID) => ["content_workflows_by_content", contentId],
@@ -352,3 +473,6 @@ export class KeyBuilder {
 // Export type-safe key builders
 export type KeyPattern = typeof KeyPatterns;
 export type EntityType = keyof typeof KeyPatterns;
+
+// Main export for use in repositories
+export const DbPatterns = KeyPatterns;

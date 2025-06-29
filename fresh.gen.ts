@@ -14,6 +14,7 @@ import * as $api_graphql from "./routes/api/graphql.ts";
 import * as $api_joke from "./routes/api/joke.ts";
 import * as $api_media_index from "./routes/api/media/index.ts";
 import * as $api_performance from "./routes/api/performance.ts";
+import * as $api_workflow_index from "./routes/api/workflow/index.ts";
 import * as $greet_name_ from "./routes/greet/[name].tsx";
 import * as $index from "./routes/index.tsx";
 import * as $Counter from "./islands/Counter.tsx";
@@ -34,6 +35,7 @@ const manifest = {
     "./routes/api/joke.ts": $api_joke,
     "./routes/api/media/index.ts": $api_media_index,
     "./routes/api/performance.ts": $api_performance,
+    "./routes/api/workflow/index.ts": $api_workflow_index,
     "./routes/greet/[name].tsx": $greet_name_,
     "./routes/index.tsx": $index,
   },
