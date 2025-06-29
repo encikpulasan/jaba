@@ -35,3 +35,16 @@ export interface TranslationMemory {
   usage: number;
   lastUsedAt: number;
 }
+
+// Locale Configuration
+export interface LocaleConfig {
+  code: string;
+  name: string;
+  nativeName: string;
+  enabled: boolean;
+  rtl?: boolean;
+  hreflang?: string;
+  pluralRule?: PluralRule;
+}
+
+export type PluralRule = "simple" | "slavic" | "complex";

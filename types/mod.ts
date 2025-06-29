@@ -158,3 +158,27 @@ export interface EnvironmentConfig {
   RATE_LIMIT_REQUESTS: number;
   RATE_LIMIT_WINDOW: number;
 }
+
+// Export additional content types
+export type {
+  ContentTranslation,
+  TranslationContext,
+  TranslationMemoryEntry,
+} from "./content.ts";
+
+// Export workflow types
+export type {
+  TranslationStatus,
+  TranslationWorkflow,
+  WorkflowAction,
+  WorkflowStep,
+} from "./workflow.ts";
+
+// Export i18n types
+export type {
+  FormatOptions,
+  LocaleConfig,
+  PluralRule,
+  TranslationKey,
+  TranslationNamespace,
+} from "./i18n.ts";

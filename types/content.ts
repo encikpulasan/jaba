@@ -12,6 +12,16 @@ import type {
   WorkflowStatus,
 } from "./base.ts";
 
+// Translation Status
+export type TranslationStatus =
+  | "draft"
+  | "pending"
+  | "in_progress"
+  | "review"
+  | "approved"
+  | "published"
+  | "rejected";
+
 export interface Content extends MultilingualEntity, Auditable, SoftDeletable {
   title: string;
   slug: Slug;
@@ -156,4 +166,50 @@ export interface ContentAnalytics {
   lastViewedAt: Timestamp;
   topReferrers: Array<{ url: string; count: number }>;
   topCountries: Array<{ country: string; count: number }>;
+}
+
+// Content Translation
+export interface ContentTranslation {
+  id: UUID;
+  contentId: UUID;
+  locale: Locale;
+  title: string;
+  content: string;
+  fields: Record<string, unknown>;
+  status: TranslationStatus;
+  translatedBy: UUID;
+  reviewedBy?: UUID;
+  approvedBy?: UUID;
+  createdAt: number;
+  updatedAt: number;
+  submittedForReviewAt?: number;
+  approvedAt?: number;
+  publishedAt?: number;
+  rejectedAt?: number;
+}
+
+// Translation Memory
+export interface TranslationMemoryEntry {
+  id: UUID;
+  sourceText: string;
+  targetText: string;
+  sourceLocale: Locale;
+  targetLocale: Locale;
+  sourceHash: string;
+  context?: TranslationContext;
+  translatedBy?: UUID;
+  reviewedBy?: UUID;
+  createdAt: number;
+  updatedAt?: number;
+  lastUsed: number;
+  useCount: number;
+  quality: "verified" | "reviewed" | "unverified";
+  reviewedAt?: number;
+}
+
+export interface TranslationContext {
+  contentType?: string;
+  domain?: string;
+  tags?: string[];
+  quality?: "verified" | "reviewed" | "unverified";
 }
